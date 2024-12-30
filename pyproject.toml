@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pgapp"
+version = "0.1"
+authors = [
+  { name="Robert Johansson", email="robertrockar@live.com" },
+]
+description = "Boilerplate code for writing applications on top of pygame."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["pygame"]
+
+[project.urls]
+Homepage = "https://github.com/rj79/pgapp"
+Issues = "https://github.com/rj79/pgapp/issues"
