@@ -14,6 +14,7 @@ class PgApp:
         self._DesiredFps = PgApp.DESIRED_FPS
         self._Running = True
         self._RenderTime = 0
+        self._ReturnValue = 0
 
     def AddEventHandler(self, handler):
         self._EventHandlers.append(handler)
@@ -22,7 +23,7 @@ class PgApp:
         self._EventHandlers.remove(handler)
 
     @property
-    def desired_fps(self):
+    def DesiredFps(self):
         return self._DesiredFps
 
     async def OnStartup(self):
@@ -85,18 +86,22 @@ class PgApp:
                 await asyncio.sleep(sleeptime)
             else:
                 logging.warning('Can\'t keep up framerate')
+                # Release cooperative control even when framerate is too low
+                await asyncio.sleep(0)
 
         logging.debug('Exiting pygame_task')       
         await self.OnShutdown()
         pg.quit()
+        return self._ReturnValue
 
     def RenderTime(self):
         return self._RenderTime
             
-    def RequestStop(self):
+    def RequestStop(self, returnValue=0):
         """ Do not override """
         logging.info('RequestStop')
         self._Running = False
+        self._ReturnValue = returnValue
         self.OnStopRequested()
         
     def IsRunning(self):
