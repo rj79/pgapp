@@ -4,14 +4,15 @@ import pygame as pg
 from time import monotonic
 
 class PgApp:
-    DESIRED_FPS = 30
+    TARGET_FPS = 30
     
-    def __init__(self, width, height):
+    def __init__(self, width, height, flags=0):
         pg.init()
+        flags = flags | pg.DOUBLEBUF
         self._Surface = pg.display.set_mode((width, height),
-                                            pg.DOUBLEBUF, 32)        
+                                            flags, 32)
         self._EventHandlers = []
-        self._DesiredFps = PgApp.DESIRED_FPS
+        self._TargetFPS = PgApp.TARGET_FPS
         self._Running = True
         self._RenderTime = 0
         self._ReturnValue = 0
@@ -23,8 +24,8 @@ class PgApp:
         self._EventHandlers.remove(handler)
 
     @property
-    def DesiredFps(self):
-        return self._DesiredFps
+    def TargetFPS(self):
+        return self._TargetFPS
 
     async def OnStartup(self):
         """ Override """
