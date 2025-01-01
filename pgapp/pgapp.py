@@ -8,14 +8,20 @@ class PgApp:
     
     def __init__(self, width, height, flags=0):
         pg.init()
-        flags = flags | pg.DOUBLEBUF
+        self._DispFlags = flags | pg.DOUBLEBUF
+        self._ColorDepth = 32
         self._Surface = pg.display.set_mode((width, height),
-                                            flags, 32)
+                                            self._DispFlags, self._ColorDepth)
         self._EventHandlers = []
         self._TargetFPS = PgApp.TARGET_FPS
         self._Running = True
         self._RenderTime = 0
         self._ReturnValue = 0
+
+    def Resize(self, width, height):
+        del self._Surface
+        self._Surface = pg.display.set_mode((width, height),
+                                             self._DispFlags, self._ColorDepth)
 
     def AddEventHandler(self, handler):
         self._EventHandlers.append(handler)
@@ -82,7 +88,7 @@ class PgApp:
 
             # Keep framerate as constant as possible
             worktime = monotonic() - t1
-            sleeptime = (1 / self.desired_fps) - worktime
+            sleeptime = (1 / self._TargetFPS) - worktime
             if (sleeptime > 0):
                 await asyncio.sleep(sleeptime)
             else:
@@ -107,3 +113,21 @@ class PgApp:
         
     def IsRunning(self):
         return self._Running
+
+
+def get_event_loop():
+    import sys
+    import asyncio
+    if sys.version_info < (3, 10):
+        loop = asyncio.get_event_loop()
+    else:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+
+    asyncio.set_event_loop(loop)
+    return loop
+
+def run(app:PgApp):
+    get_event_loop().run_until_complete(app.MainTask())

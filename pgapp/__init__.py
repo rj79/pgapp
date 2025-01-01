@@ -1,1 +1,1 @@
-from .pgapp import PgApp
+from .pgapp import PgApp, run
