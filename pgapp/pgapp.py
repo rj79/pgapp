@@ -129,5 +129,5 @@ def get_event_loop():
     asyncio.set_event_loop(loop)
     return loop
 
-def run(app:PgApp):
-    get_event_loop().run_until_complete(app.MainTask())
+def runApp(app:PgApp):
+    return get_event_loop().run_until_complete(app.MainTask())
