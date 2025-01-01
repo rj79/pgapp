@@ -73,9 +73,8 @@ class PgApp:
             t0 = t1
 
             # Handle events
-            if pg.event.peek():
-                for event in pg.event.get():
-                    self._HandleEvent(event)
+            for event in pg.event.get():
+                self._HandleEvent(event)
 
             # Update
             self.OnUpdate(dt)
