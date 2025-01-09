@@ -3,6 +3,26 @@ import logging
 import pygame as pg
 from time import monotonic
 
+class FPSCounter:
+    MAX_SAMPLES = 10
+
+    def __init__(self):
+        self._AverageFPS = 0
+        self._Samples = 0
+        self._Time = 0
+        self._StartTime = monotonic()
+
+    def Count(self):
+        if self._Samples == FPSCounter.MAX_SAMPLES:
+            self._AverageFPS = FPSCounter.MAX_SAMPLES / (monotonic() - self._StartTime)
+            self._Samples = 0
+            self._StartTime = monotonic()
+        self._Samples += 1
+
+    def GetAverage(self):
+        return self._AverageFPS
+
+
 class PgApp:
     TARGET_FPS = 30
     
@@ -17,6 +37,8 @@ class PgApp:
         self._Running = True
         self._RenderTime = 0
         self._ReturnValue = 0
+
+        self._FPSCounter = FPSCounter()
 
     def Resize(self, width, height):
         del self._Surface
@@ -84,6 +106,7 @@ class PgApp:
             self.OnDraw(self._Surface)
             self._RenderTime = monotonic() - r0
             pg.display.flip()
+            self._FPSCounter.Count()
 
             # Keep framerate as constant as possible
             worktime = monotonic() - t1
@@ -91,7 +114,8 @@ class PgApp:
             if (sleeptime > 0):
                 await asyncio.sleep(sleeptime)
             else:
-                logging.warning('Can\'t keep up framerate')
+                if self._FPSCounter.GetAverage() <= self._TargetFPS - 1:
+                    logging.warning('Can\'t keep up framerate')
                 # Release cooperative control even when framerate is too low
                 await asyncio.sleep(0)
 
