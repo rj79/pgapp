@@ -26,14 +26,14 @@ class FPSCounter:
 class PgApp:
     TARGET_FPS = 30
     
-    def __init__(self, width, height, flags=0):
+    def __init__(self, width, height, flags=0, target_fps=TARGET_FPS):
         pg.init()
         self._DispFlags = flags | pg.DOUBLEBUF
         self._ColorDepth = 32
         self._Surface = pg.display.set_mode((width, height),
                                             self._DispFlags, self._ColorDepth)
         self._EventHandlers = []
-        self._TargetFPS = PgApp.TARGET_FPS
+        self.SetTargetFPS(target_fps)
         self._Running = True
         self._RenderTime = 0
         self._ReturnValue = 0
@@ -58,7 +58,7 @@ class PgApp:
         return self._TargetFPS
 
     def SetTargetFPS(self, fps):
-        self._TargetFPS = fps
+        self._TargetFPS = max(0, fps)
 
     async def OnStartup(self):
         """ Override """
@@ -113,16 +113,19 @@ class PgApp:
             pg.display.flip()
             self._FPSCounter.Count()
 
-            # Keep framerate as constant as possible
-            worktime = monotonic() - t1
-            sleeptime = (1 / self._TargetFPS) - worktime
-            if (sleeptime > 0):
-                await asyncio.sleep(sleeptime)
+            if self._TargetFPS > 0:
+                # Keep framerate as constant as possible
+                worktime = monotonic() - t1
+                sleeptime = (1 / self._TargetFPS) - worktime
+                if (sleeptime > 0):
+                    await asyncio.sleep(sleeptime)
+                else:
+                    actual_fps = self._FPSCounter.GetAverage()
+                    if actual_fps < self._TargetFPS - 1:
+                        logging.warning(f'Can\'t keep up framerate. Actual: {actual_fps:.1f} FPS. Target: {self._TargetFPS:.1f} FPS')
+                    # Release cooperative control even when framerate is too low
+                    await asyncio.sleep(0)
             else:
-                actual_fps = self._FPSCounter.GetAverage()
-                if actual_fps < self._TargetFPS - 1:
-                    logging.warning(f'Can\'t keep up framerate. Actual: {actual_fps:.1f} FPS. Target: {self._TargetFPS:.1f} FPS')
-                # Release cooperative control even when framerate is too low
                 await asyncio.sleep(0)
 
         logging.debug('Exiting pygame_task')       
