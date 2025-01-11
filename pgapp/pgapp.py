@@ -51,9 +51,14 @@ class PgApp:
     def RemoveEventHandler(self, handler):
         self._EventHandlers.remove(handler)
 
-    @property
-    def TargetFPS(self):
+    def GetFPS(self):
+        return self._FPSCounter.GetAverage()
+
+    def GetTargetFPS(self):
         return self._TargetFPS
+
+    def SetTargetFPS(self, fps):
+        self._TargetFPS = fps
 
     async def OnStartup(self):
         """ Override """
@@ -114,8 +119,9 @@ class PgApp:
             if (sleeptime > 0):
                 await asyncio.sleep(sleeptime)
             else:
-                if self._FPSCounter.GetAverage() <= self._TargetFPS - 1:
-                    logging.warning('Can\'t keep up framerate')
+                actual_fps = self._FPSCounter.GetAverage()
+                if actual_fps < self._TargetFPS - 1:
+                    logging.warning(f'Can\'t keep up framerate. Actual: {actual_fps:.1f} FPS. Target: {self._TargetFPS:.1f} FPS')
                 # Release cooperative control even when framerate is too low
                 await asyncio.sleep(0)
 
