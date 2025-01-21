@@ -138,10 +138,11 @@ class PgApp:
             
     def RequestStop(self, returnValue=0):
         """ Do not override """
-        logging.info('RequestStop')
-        self._Running = False
-        self._ReturnValue = returnValue
-        self.OnStopRequested()
+        if self._Running:
+            logging.info('RequestStop')
+            self._Running = False
+            self._ReturnValue = returnValue
+            self.OnStopRequested()
         
     def IsRunning(self):
         return self._Running
