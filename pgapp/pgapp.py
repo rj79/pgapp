@@ -90,10 +90,12 @@ class PgApp:
             handler(event)
 
     async def MainTask(self):
+        logging.debug('Waiting for OnStartup to complete')
         await self.OnStartup()
 
         t0 = monotonic()
 
+        logging.debug('Entering main loop')
         while self.IsRunning():      
             t1 = monotonic()
             dt = t1 - t0
@@ -128,8 +130,9 @@ class PgApp:
             else:
                 await asyncio.sleep(0)
 
-        logging.debug('Exiting pygame_task')       
+        logging.debug('Waiting for OnShutdown to complete')
         await self.OnShutdown()
+        logging.debug('Quitting pygame')
         pg.quit()
         return self._ReturnValue
 
