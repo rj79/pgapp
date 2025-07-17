@@ -54,10 +54,15 @@ class PgApp:
     def GetFPS(self):
         return self._FPSCounter.GetAverage()
 
+    def GetRenderTime(self):
+        return self._RenderTime
+
     def GetTargetFPS(self):
         return self._TargetFPS
 
     def SetTargetFPS(self, fps):
+        if fps is None:
+            fps = 0
         self._TargetFPS = max(0, fps)
 
     async def OnStartup(self):
@@ -72,20 +77,54 @@ class PgApp:
         """ Override """
         pass
 
+    def OnKeyDown(self, key, mod, unicode, scancode):
+        """ Override """
+        pass
+    
+    def OnKeyUp(self, key, mod, unicode, scancode):
+        """ Override """
+        pass
+    
+    def OnMouseMotion(self, pos, rel, buttons, touch):
+        """ Override """
+        pass
+
+    def OnMouseButtonDown(self, pos, button, touch):
+        """ Override """
+        pass
+
+    def OnMouseButtonUp(self, pos, button, touch):
+        """ Override """
+        pass
+
     def OnUpdate(self, dt):
         """ Override """
         pass
 
-    def OnDraw(self, surface:pg.Surface):
+    def OnDraw(self, surface:pg.surface.Surface):
         """ Override """
         pass
-        
+
     def OnStopRequested(self):
         """ Override """
-        pass    
+        pass
 
     def _HandleEvent(self, event:pg.event.Event):
-        self.OnEvent(event)
+
+        if event.type == pg.MOUSEMOTION:
+            self.OnMouseMotion(event.pos, event.rel, event.buttons, event.touch)
+        elif event.type == pg.KEYDOWN:
+            self.OnKeyDown(event.key, event.mod, event.unicode, event.scancode)
+        elif event.type == pg.KEYUP:    
+            self.OnKeyUp(event.key, event.mod, event.unicode, event.scancode)
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            self.OnMouseButtonDown(event.pos, event.button, event.touch)
+        elif event.type == pg.MOUSEBUTTONUP:
+            self.OnMouseButtonUp(event.pos, event.button, event.touch)
+        else:
+            self.OnEvent(event)
+
+
         for handler in self._EventHandlers:
             handler(event)
 
@@ -135,9 +174,6 @@ class PgApp:
         logging.debug('Quitting pygame')
         pg.quit()
         return self._ReturnValue
-
-    def RenderTime(self):
-        return self._RenderTime
             
     def RequestStop(self, returnValue=0):
         """ Do not override """
