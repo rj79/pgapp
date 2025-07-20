@@ -26,13 +26,14 @@ class FPSCounter:
 class PgApp:
     TARGET_FPS = 30
     
-    def __init__(self, width, height, flags=0, target_fps=TARGET_FPS):
+    def __init__(self, width, height, flags=0, target_fps=TARGET_FPS, one_event_callback=False):
         pg.init()
         self._DispFlags = flags | pg.DOUBLEBUF
         self._ColorDepth = 32
         self._Surface = pg.display.set_mode((width, height),
                                             self._DispFlags, self._ColorDepth)
         self._EventHandlers = []
+        self._OneEventCallback = one_event_callback
         self.SetTargetFPS(target_fps)
         self._Running = True
         self._RenderTime = 0
@@ -111,19 +112,21 @@ class PgApp:
 
     def _HandleEvent(self, event:pg.event.Event):
 
-        if event.type == pg.MOUSEMOTION:
-            self.OnMouseMotion(event.pos, event.rel, event.buttons, event.touch)
-        elif event.type == pg.KEYDOWN:
-            self.OnKeyDown(event.key, event.mod, event.unicode, event.scancode)
-        elif event.type == pg.KEYUP:    
-            self.OnKeyUp(event.key, event.mod, event.unicode, event.scancode)
-        elif event.type == pg.MOUSEBUTTONDOWN:
-            self.OnMouseButtonDown(event.pos, event.button, event.touch)
-        elif event.type == pg.MOUSEBUTTONUP:
-            self.OnMouseButtonUp(event.pos, event.button, event.touch)
-        else:
+        if self._OneEventCallback:
             self.OnEvent(event)
-
+        else:
+            if event.type == pg.MOUSEMOTION:
+                self.OnMouseMotion(event.pos, event.rel, event.buttons, event.touch)
+            elif event.type == pg.KEYDOWN:
+                self.OnKeyDown(event.key, event.mod, event.unicode, event.scancode)
+            elif event.type == pg.KEYUP:    
+                self.OnKeyUp(event.key, event.mod, event.unicode, event.scancode)
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                self.OnMouseButtonDown(event.pos, event.button, event.touch)
+            elif event.type == pg.MOUSEBUTTONUP:
+                self.OnMouseButtonUp(event.pos, event.button, event.touch)
+            else:
+                self.OnEvent(event)
 
         for handler in self._EventHandlers:
             handler(event)
